@@ -1,0 +1,30 @@
+version: '3'
+services:
+  db:
+    image: postgres:latest
+    ports:
+      - '5432:5432'
+    env_file:
+      - .env
+    volumes:
+      - .postgres:/var/lib/postgresql/data
+
+  auth-service:
+    build:
+      context: ./AuthService
+    depends_on:
+      - db
+    command: python3 src/main.py
+    ports:
+      - '8000:8000'
+    restart: always
+
+  order-service:
+    build:
+      context: ./OrderService
+    depends_on:
+      - db
+    command: python3 src/main.py
+    ports:
+      - '8001:8000'
+    restart: always

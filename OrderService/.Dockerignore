@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyi
+*.pyz
+*.pyw
+*.egg-info/
+venv/
+dist/
+build/
+*.egg
+*.log
+
+# Environment
+.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Miscellaneous
+.DS_Store
+
+# Tests (temporary)
+tests/
