@@ -11,11 +11,15 @@ from dishes.schemas import (
     DishListResponse,
     DishErrorResponse,
 )
+import requests
+from requests.exceptions import RequestException
 import jwt
 from dotenv import load_dotenv
 import os
 
 router = APIRouter()
+
+AUTH_SERVICE_HOST = os.getenv("AUTH_SERVICE_HOST")
 
 load_dotenv()
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -23,6 +27,28 @@ if JWT_SECRET is None:
     raise EnvironmentError("JWT_SECRET is not set in the environment variables")
 
 security = HTTPBearer()
+
+def get_user_by_id(user_id: int) -> User:
+    try:
+        url = f"http://{AUTH_SERVICE_HOST}:8000/users/{user_id}"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            user_data = response.json()
+            user = User(**user_data)
+            return user
+        else:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail="Failed to fetch user data",
+            )
+    except RequestException as e:
+        print(f"An error occurred during the request: {e}")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return None
+
 
 def get_current_user(token: str = Depends(security), db: Session = Depends(get_db)):
     try:
@@ -45,7 +71,7 @@ def get_current_user(token: str = Depends(security), db: Session = Depends(get_d
             detail="Could not validate credentials",
         )
 
-    user = db.query(User).get(user_id)
+    user = get_user_by_id(user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
